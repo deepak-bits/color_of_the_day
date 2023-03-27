@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .display{
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px;
+        }
+
+        .swatch{
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            /* color: white; */
+        }
+    </style>
+    <title>Color of the Day</title>
+</head>
+<body>
+    <h1>Color of the Day</h1>
+
+    <form action="" id="color_form">
+        <input type="date" id="curr_date">
+        <input type="submit">
+    </form>
+    
+    <div id="display" class="display"></div>
+    <button class="clear_btn" id="clear_btn">Clear History</button>
+    
+    <script>
+        let colors;
+
+        window.addEventListener('load', function() {
+            // console.log('All assets are loaded')
+            if(localStorage.getItem('colors') === null){
+                colors = [];
+            } else{
+                colors = JSON.parse(localStorage.getItem('colors'));
+                makeSwatch(colors);
+            }
+        })
+        
+        const colorForm = document.getElementById("color_form");
+        const dateInput = document.getElementById("curr_date");
+        const displayDiv = document.getElementById("display");
+        const clearBtn = document.getElementById("clear_btn");
+
+        colorForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            // console.log("submit clicked");
+            const date = dateInput.value;
+            console.log(date, typeof(date));
+            const URL = `https://colors.zoodinkers.com/api?date=${date}`;
+
+            fetch(URL)
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                colors.push(data);
+                console.log(colors);
+
+                localStorage.setItem('colors', JSON.stringify(colors));
+                displayDiv.innerHTML = "";
+                makeSwatch(colors);
+            })
+            .catch(err => console.log(err));
+        })
+
+        clearBtn.addEventListener("click", clearHistory);
+
+        function makeSwatch(colorsArr) {
+            colorsArr.forEach(colorObj => {
+                const color = colorObj.hex;
+                const date = colorObj.date;
+
+                const swatch = document.createElement("div");
+
+                swatch.classList.add("swatch");
+                swatch.style.backgroundColor = color;
+                swatch.textContent = date;
+
+                displayDiv.appendChild(swatch);
+            })
+        }
+
+        function clearHistory() {
+            colors = [];
+            localStorage.setItem("colors", JSON.stringify(colors));
+            displayDiv.innerHTML = "";
+        }
+    </script>
+</body>
+</html>
